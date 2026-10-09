@@ -1,0 +1,47 @@
+# 5분마다 서울시 실시간 도로 속도를 수집해 사이트를 새로 만들고 GitHub Pages에 올린다.
+name: 사이트 자동 갱신
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"     # 5분마다 (GitHub 사정에 따라 몇 분 늦어질 수 있음)
+  workflow_dispatch:           # Actions 탭에서 직접 실행하는 버튼
+  push:
+    branches: [main]           # 코드를 올릴 때도 바로 반영
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 패키지 설치
+        run: pip install requests python-dotenv
+
+      - name: 속도 수집 + 사이트 생성
+        env:
+          SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}   # 저장소 Secrets에 등록한 인증키
+        run: python update_site.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
