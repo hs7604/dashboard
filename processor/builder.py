@@ -5,12 +5,12 @@ from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 import requests
 
-from .api import SeoulOpenApiClient
-from .config import Settings
-from .district import District
+from collector.api import SeoulOpenApiClient
+from backend.config import Settings
+from backend.district import District
 from .geo import Polyline, TmConverter
-from .repository import LinkRepository
-from .road import ROAD_TYPES, GeneralRoad, Link, UrbanExpressway
+from storage.repository import LinkRepository
+from backend.road import ROAD_TYPES, GeneralRoad, Link, UrbanExpressway
 
 GU_URL = (
     "https://raw.githubusercontent.com/southkorea/seoul-maps/master/"

@@ -1,15 +1,19 @@
 """
 API 연결 확인용 스크립트.
 
-    python test_api.py                        # 샘플 링크 1개
-    python test_api.py 1220003800 1220003900  # 여러 링크
+    python collector/test_api.py                        # 샘플 링크 1개
+    python collector/test_api.py 1220003800 1220003900  # 여러 링크
 """
 
 import sys
+from pathlib import Path
 
-from traffic.api import SeoulOpenApiClient
-from traffic.config import Settings
-from traffic.road import GeneralRoad, Link, UrbanExpressway
+if __package__ is None:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from collector.api import SeoulOpenApiClient
+from backend.config import Settings
+from backend.road import GeneralRoad, Link, UrbanExpressway
 
 SAMPLE_LINK_ID = "1220003800"
 

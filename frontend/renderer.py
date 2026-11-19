@@ -4,10 +4,10 @@ import json
 import shutil
 from pathlib import Path
 
-from .clipper import DistrictRoads
-from .district import District
-from .repository import TrafficSnapshot
-from .road import CongestionLevel, Link, UrbanExpressway
+from processor.clipper import DistrictRoads
+from backend.district import District
+from storage.repository import TrafficSnapshot
+from backend.road import CongestionLevel, Link, UrbanExpressway
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 

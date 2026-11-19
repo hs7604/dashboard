@@ -5,9 +5,9 @@
     python build_data.py
 """
 
-from traffic.api import SeoulOpenApiClient
-from traffic.builder import NetworkBuilder
-from traffic.config import Settings
+from collector.api import SeoulOpenApiClient
+from processor.builder import NetworkBuilder
+from backend.config import Settings
 
 
 def main() -> None:

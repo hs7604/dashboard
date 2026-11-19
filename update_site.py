@@ -11,12 +11,12 @@ import argparse
 import time
 from datetime import datetime
 
-from traffic.api import SeoulOpenApiClient
-from traffic.clipper import RoadClipper
-from traffic.collector import TrafficCollector
-from traffic.config import Settings
-from traffic.renderer import SiteRenderer
-from traffic.repository import LinkRepository, TrafficSnapshot
+from collector.api import SeoulOpenApiClient
+from collector.traffic_collector import TrafficCollector
+from processor.clipper import RoadClipper
+from backend.config import Settings
+from frontend.renderer import SiteRenderer
+from storage.repository import LinkRepository, TrafficSnapshot
 
 
 def run_once(settings: Settings, limit: int | None, offline: bool) -> None:

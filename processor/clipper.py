@@ -4,8 +4,8 @@ import json
 import math
 from pathlib import Path
 
-from .district import District
-from .road import Link
+from backend.district import District
+from backend.road import Link
 
 # 구 이름 → [(링크 ID, [선, 선, ...]), ...]
 DistrictRoads = dict[str, list[tuple[str, list]]]

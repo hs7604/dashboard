@@ -5,10 +5,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from .config import Settings
-from .district import District
-from .geo import Area
-from .road import Link
+from backend.config import Settings
+from backend.district import District
+from processor.geo import Area
+from backend.road import Link
 
 
 @dataclass

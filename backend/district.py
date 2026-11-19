@@ -1,6 +1,6 @@
 """자치구와 구 단위 정체도."""
 
-from .geo import Area
+from processor.geo import Area
 from .road import CongestionLevel, Link
 
 

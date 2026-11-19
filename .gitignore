@@ -9,6 +9,6 @@ __pycache__/
 *.pyc
 
 # 실행할 때마다 새로 만들어지는 파일
-site/
-traffic.json
-clipped_roads.json
+frontend/site/
+storage/data/traffic.json
+storage/data/clipped_roads.json

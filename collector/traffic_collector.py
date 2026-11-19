@@ -4,8 +4,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from .api import SeoulOpenApiClient
-from .road import Link
-from .repository import TrafficSnapshot
+from backend.road import Link
+from storage.repository import TrafficSnapshot
 
 
 class TrafficCollector:
