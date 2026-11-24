@@ -16,7 +16,7 @@ class TrafficSnapshot:
     """특정 시각에 수집한 전체 도로 속도."""
 
     collected_at: datetime
-    speeds: dict[str, tuple[float, int]] = field(default_factory=dict)  # link_id → (속도, 통행시간)
+    speeds: dict[str, tuple[float, int]] = field(default_factory=dict)
 
     def apply_to(self, links: list[Link]) -> None:
         """수집한 속도를 도로 객체들에 반영한다."""

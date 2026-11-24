@@ -23,11 +23,10 @@ class SeoulOpenApiClient:
     NO_DATA = "INFO-200"
 
     def __init__(self, api_key: str, timeout: float = 10, retries: int = 3):
-        self._api_key = api_key          # 밑줄(_)로 시작: 클래스 내부용
+        self._api_key = api_key
         self._timeout = timeout
         self._retries = retries
 
-    # ---- 내부 메서드 ----------------------------------------------------
     def _request(self, service: str, start: int, end: int, *params: str) -> list[ET.Element]:
         """API를 호출해 <row> 요소 목록을 반환한다."""
         parts = [self.BASE_URL, self._api_key, "xml", service, str(start), str(end), *params]
@@ -51,7 +50,6 @@ class SeoulOpenApiClient:
             raise ApiError(f"{service}: {code} {root.findtext('.//MESSAGE')}")
         return root.findall("row")
 
-    # ---- 공개 메서드 ----------------------------------------------------
     def get_speed(self, link_id: str) -> tuple[float, int] | None:
         """링크의 (실시간 속도 km/h, 통행시간 초). 데이터가 없으면 None."""
         rows = self._request("TrafficInfo", 1, 1, link_id)
