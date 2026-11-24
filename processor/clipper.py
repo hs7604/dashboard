@@ -7,7 +7,6 @@ from pathlib import Path
 from backend.district import District
 from backend.road import Link
 
-# 구 이름 → [(링크 ID, [선, 선, ...]), ...]
 DistrictRoads = dict[str, list[tuple[str, list]]]
 
 
@@ -21,7 +20,7 @@ class RoadClipper:
     도로망 파일이 바뀌었을 때만 다시 계산한다.
     """
 
-    MIN_LENGTH_DEG = 0.00005    # 약 5m보다 짧은 자투리 조각은 버림
+    MIN_LENGTH_DEG = 0.00005
     DIGITS = 5
 
     def __init__(self, cache_file: Path, source_files: list[Path]):
