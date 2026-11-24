@@ -29,7 +29,7 @@ def run_once(settings: Settings, limit: int | None, offline: bool) -> None:
         targets = links
         if limit:
             step = max(1, len(links) // limit)
-            targets = links[::step][:limit]       # 서울 전체에 골고루 퍼지도록 일정 간격으로 선택
+            targets = links[::step][:limit]
         print(f"[{datetime.now():%H:%M:%S}] 도로 {len(targets):,}개 속도 수집 중...")
         started = time.time()
         client = SeoulOpenApiClient(settings.api_key)
@@ -61,7 +61,7 @@ def main() -> None:
         started = time.time()
         try:
             run_once(settings, args.limit, args.offline)
-        except Exception as e:                     # 한 번 실패해도 다음 주기에 다시 시도
+        except Exception as e:
             print(f"  오류: {e}")
         wait = args.interval * 60 - (time.time() - started)
         if wait > 0:
