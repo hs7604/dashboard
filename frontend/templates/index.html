@@ -43,14 +43,10 @@
   .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
 
   main { flex: 1; display: flex; min-height: 0; }
-  /* 서울 밖: 채도를 낮춘 숲 느낌의 세이지 그린 */
   :root { --outside: #a9bca4; }
   #map { flex: 1; min-height: 0; background: var(--outside); }
-  /* 가림막 그림자가 서울 경계 안쪽으로 살짝 드리워 입체감을 줌 */
   #map .leaflet-mask-pane { filter: drop-shadow(0 0 8px rgba(30, 60, 30, 0.3)); }
-  /* 배경지도는 컬러를 유지하되 채도를 살짝 낮춰 정체도 색이 먼저 눈에 들어오게 */
   #map .leaflet-tile-pane { filter: saturate(0.8); }
-  /* 화면 전환 시 순간적으로 다시 그려지는 모습을 가리는 짧은 페이드 */
   #map .leaflet-map-pane { transition: opacity 0.16s ease; }
   #map.switching .leaflet-map-pane { opacity: 0; }
   .leaflet-container .leaflet-control-attribution { background: rgba(255, 255, 255, 0.75); }
@@ -118,7 +114,6 @@
 <body>
 <header>
   <div class="brand">
-    <!-- 로고 파일이 없으면 자동으로 숨김 (assets/kw_logo.png) -->
     <img class="logo" src="kw_logo.png" alt="광운대학교" onerror="this.remove()">
     <div>
       <h1>서울 실시간 도로 소통</h1>
@@ -150,18 +145,14 @@
   document.getElementById("legend").innerHTML = ORDER.concat("UNKNOWN")
     .map((k) => `<span><i class="dot" style="background:${LV[k].color}"></i>${LV[k].label}</span>`).join("");
 
-  // ---- 지도 ----------------------------------------------------------
-  // 구와 도로를 같은 캔버스에 그려야 클릭 판정이 서로 가리지 않는다
-  // tolerance: 얇은 도로도 클릭하기 쉽게 / padding: 화면 바깥까지 미리 그려서 이동 중 빈 곳이 안 보이게
   const canvas = L.canvas({ tolerance: 6, padding: 0.5 });
-  // zoomSnap을 작게 하면 확대 단계가 촘촘해져서 서울이 화면에 꽉 차게 맞춰진다
   const map = L.map("map", { renderer: canvas, zoomControl: true, zoomSnap: 0.1, zoomDelta: 0.5 });
   map.attributionControl.setPrefix(false);
 
   const districtByName = {};
   DATA.districts.forEach((d) => (districtByName[d.name] = d));
 
-  let current = null;          // 선택한 구 이름 (null이면 서울 전체)
+  let current = null;
   let roadLayer = null;
   let selectedRoad = null;
 
@@ -171,7 +162,6 @@
     return {
       color: active ? "#1c1f24" : "#ffffff",
       weight: active ? 2.5 : 1.5,
-      // 상세 화면: 선택한 구는 투명(배경지도가 보이게), 나머지 구는 옅게
       fillColor: LV[d.level].color,
       fillOpacity: current ? (active ? 0 : 0.25) : 0.55,
     };
@@ -188,7 +178,7 @@
         `<b>${esc(d.name)}</b> · ${LV[d.level].label}` + (d.avg_speed != null ? ` · 평균 ${fmtSpeed(d.avg_speed)}km/h` : ""),
         { sticky: true, className: "gu-tip" });
       layer.on("click", (e) => {
-        L.DomEvent.stopPropagation(e);              // 지도 바깥 클릭 처리로 넘어가지 않게
+        L.DomEvent.stopPropagation(e);
         if (current !== d.name) showDistrict(d.name);
       });
       layer.on("mouseover", () => { if (!current) layer.setStyle({ fillOpacity: 0.9 }); });
@@ -198,19 +188,15 @@
 
   const seoulBounds = districtLayer.getBounds();
 
-  // ---- 배경지도: 서울 근처 타일만 불러온다 --------------------------------
   const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     bounds: seoulBounds.pad(0.05),
     maxZoom: 19,
-    keepBuffer: 4,          // 화면 주변 타일을 넉넉히 남겨둬 다시 불러오는 깜빡임을 줄임
+    keepBuffer: 4,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · 교통·도로: 서울 열린데이터광장 · 구 경계: 통계청',
   }).addTo(map);
 
-  // ---- 서울 밖 가리기 -------------------------------------------------
-  // 전 세계를 덮는 사각형에 25개 구 모양으로 구멍을 뚫어 서울만 보이게 한다.
-  // padding을 크게 줘서(화면의 1.5배 바깥까지 미리 그림) 이동·확대 중에도 바깥이 비치지 않게 함
   map.createPane("mask");
-  map.getPane("mask").style.zIndex = 350;          // 배경지도(200) 위, 구·도로(400) 아래
+  map.getPane("mask").style.zIndex = 350;
   map.getPane("mask").style.pointerEvents = "none";
   const maskRenderer = L.svg({ pane: "mask", padding: 1.5 });
   const holes = [];
@@ -223,21 +209,17 @@
   }).addTo(map);
 
   map.fitBounds(seoulBounds, { padding: [8, 8] });
-  // 서울 밖으로 멀리 끌고 가거나 너무 축소하지 못하게 제한
   map.setMaxBounds(seoulBounds.pad(0.2));
   map.setMinZoom(map.getZoom());
 
-  // 서울 밖(빈 영역)을 누르면 처음 화면으로
   map.on("click", () => { if (current) showOverview(); });
 
-  // ---- 구 이름 표시 (서울 전체 화면에서만) ------------------------------
   const labelLayer = L.layerGroup(DATA.districts.map((d) =>
     L.marker(d.label, {
       interactive: false, keyboard: false,
       icon: L.divIcon({ className: "gu-label", html: `<span>${esc(d.name)}</span>`, iconSize: null }),
     })));
 
-  // ---- 공통 패널 조각 -------------------------------------------------
   function levelBar(counts) {
     const total = ORDER.reduce((s, k) => s + (counts[k] || 0), 0);
     if (!total) return `<p class="sub">수집된 속도 정보가 없습니다.</p>`;
@@ -246,9 +228,6 @@
     return `<div class="bar">${seg}</div><div class="bar-legend">${leg}</div>`;
   }
 
-  // ---- 서울 전체 화면 -------------------------------------------------
-  // ---- 화면 전환: 살짝 어둡게 → 바꾸기 → 배경지도 준비되면 다시 밝게 -----------
-  // 즉시 전환하면 지도가 다시 그려지는 순간이 번쩍여 보이므로 짧은 페이드로 가린다
   const mapEl = document.getElementById("map");
   let switching = false;
   function transition(change) {
@@ -266,7 +245,7 @@
       };
       if (tiles.isLoading()) tiles.once("load", show);
       else requestAnimationFrame(show);
-      setTimeout(show, 700);                      // 타일이 늦게 와도 0.7초 뒤엔 보여줌
+      setTimeout(show, 700);
     }, 160);
   }
   const showOverview = () => transition(drawOverview);
@@ -302,14 +281,13 @@
       li.addEventListener("click", () => showDistrict(li.dataset.gu)));
   }
 
-  // ---- 구 상세 화면 ---------------------------------------------------
   function roadStyle(l, selected) {
     const base = l.expressway ? 6 : 4;
     return {
       color: LV[l.level].color,
       weight: selected ? base + 4 : base,
       opacity: l.level === "UNKNOWN" ? 0.6 : 0.95,
-      lineCap: "butt",      // 둥근 끝은 선 두께만큼 구 경계 밖으로 삐져나와 보여서 평평하게
+      lineCap: "butt",
       lineJoin: "round",
     };
   }
@@ -324,11 +302,10 @@
 
     districtLayer.eachLayer((layer) => {
       if (layer.feature.properties.name !== name) return;
-      layer.bringToFront();      // 옆 구의 흰 테두리가 선택한 구의 테두리를 덮지 않게 (도로보다 먼저 해야 도로가 위에 그려짐)
+      layer.bringToFront();
       map.fitBounds(layer.getBounds(), { padding: [20, 20], animate: false });
     });
 
-    // 구 경계 안쪽으로 잘라둔 도로 조각만 그린다
     roadLayer = L.layerGroup().addTo(map);
     d.roads.forEach(([idx, pieces]) => {
       const l = DATA.links[idx];
@@ -380,7 +357,7 @@
     document.getElementById("back").addEventListener("click", showOverview);
   }
 
-  drawOverview();      // 첫 화면은 페이드 없이 바로
+  drawOverview();
 })();
 </script>
 </body>
