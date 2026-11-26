@@ -1,5 +1,3 @@
-"""구 경계로 도로를 잘라 구 상세 지도용 도로 조각을 만든다."""
-
 import json
 import math
 from pathlib import Path
@@ -11,14 +9,7 @@ DistrictRoads = dict[str, list[tuple[str, list]]]
 
 
 class RoadClipper:
-    """
-    구 상세 지도에서는 그 구 안에 있는 도로 부분만 보여준다.
-    구 경계를 넘어가는 도로는 경계에서 잘라내고,
-    옆 구에 속한 도로라도 이 구 안을 지나는 부분은 함께 보여준다.
 
-    자르기 계산은 몇 초 걸리므로 결과를 파일에 저장해두고,
-    도로망 파일이 바뀌었을 때만 다시 계산한다.
-    """
 
     MIN_LENGTH_DEG = 0.00005
     DIGITS = 5

@@ -1,14 +1,10 @@
-"""좌표 변환과 도형 계산. 외부 DLL 패키지 없이 순수 파이썬으로 구현한다."""
+
 
 import math
 
 
 class TmConverter:
-    """
-    횡메르카토르(TM) 좌표 → 위경도(WGS84) 변환기.
-    기본값은 EPSG:5181 (GRS80 타원체, 중부원점, 가산값 X 200,000 / Y 500,000).
-    원점이나 가산값을 바꿔 다른 TM 좌표계에도 쓸 수 있다.
-    """
+
 
     def __init__(self, lat0: float = 38.0, lon0: float = 127.0,
                  false_easting: float = 200000.0, false_northing: float = 500000.0,
@@ -32,7 +28,6 @@ class TmConverter:
         )
 
     def to_wgs84(self, x: float, y: float) -> tuple[float, float]:
-        """TM (x, y) → (경도, 위도). Snyder(1987)의 TM 역변환 공식."""
         e2, ep2, e1, a = self._e2, self._ep2, self._e1, self._a
         m = self._m0 + (y - self._fn) / self._k0
         mu = m / (a * (1 - e2 / 4 - 3 * e2**2 / 64 - 5 * e2**3 / 256))
@@ -63,7 +58,6 @@ class TmConverter:
 
 
 class Polyline:
-    """점들을 이은 선. 길이와 선 위의 중간 지점을 계산한다."""
 
     def __init__(self, points: list[tuple[float, float]]):
         if len(points) < 2:
@@ -75,7 +69,6 @@ class Polyline:
         return sum(math.dist(p, q) for p, q in zip(self.points, self.points[1:]))
 
     def midpoint(self) -> tuple[float, float]:
-        """선을 따라 절반 거리에 있는 점."""
         half, walked = self.length / 2, 0.0
         for (x1, y1), (x2, y2) in zip(self.points, self.points[1:]):
             seg = math.dist((x1, y1), (x2, y2))
@@ -87,7 +80,6 @@ class Polyline:
 
 
 class Area:
-    """GeoJSON Polygon / MultiPolygon 영역."""
 
     def __init__(self, geometry: dict):
         if geometry["type"] == "Polygon":
@@ -100,7 +92,6 @@ class Area:
 
     @staticmethod
     def _in_ring(lon: float, lat: float, ring: list) -> bool:
-        """광선 투사법(ray casting)."""
         inside, j = False, len(ring) - 1
         for i in range(len(ring)):
             xi, yi = ring[i][0], ring[i][1]
@@ -112,7 +103,6 @@ class Area:
 
     @property
     def bbox(self) -> tuple[float, float, float, float]:
-        """(최소 경도, 최소 위도, 최대 경도, 최대 위도)"""
         if not hasattr(self, "_bbox"):
             xs = [p[0] for rings in self._polygons for ring in rings for p in ring]
             ys = [p[1] for rings in self._polygons for ring in rings for p in ring]
@@ -120,7 +110,6 @@ class Area:
         return self._bbox
 
     def _edges(self) -> list[tuple]:
-        """경계선 조각 목록. 교차 계산을 빠르게 하려고 각 조각의 bbox도 함께 저장."""
         if not hasattr(self, "_edge_list"):
             edges = []
             for rings in self._polygons:
@@ -147,10 +136,7 @@ class Area:
         return not (max(xs) < x0 or min(xs) > x1 or max(ys) < y0 or min(ys) > y1)
 
     def clip_line(self, points: list) -> list[list[list[float]]]:
-        """
-        선을 이 영역 경계에서 잘라 영역 안에 있는 부분만 반환한다.
-        결과는 선 여러 개일 수 있다 (영역을 들어갔다 나갔다 하는 경우).
-        """
+
         pieces: list[list[list[float]]] = []
         edges = self._edges()
 
@@ -158,7 +144,6 @@ class Area:
             dx, dy = qx - px, qy - py
             sx0, sx1, sy0, sy1 = min(px, qx), max(px, qx), min(py, qy), max(py, qy)
 
-            # 이 선분이 경계선과 만나는 지점들을 0~1 비율(t)로 구한다
             ts = [0.0, 1.0]
             for ex1, ey1, ex2, ey2, ex0, ex9, ey0, ey9 in edges:
                 if ex9 < sx0 or ex0 > sx1 or ey9 < sy0 or ey0 > sy1:
@@ -173,7 +158,6 @@ class Area:
                     ts.append(t)
             ts.sort()
 
-            # 잘린 조각마다 가운데 점이 영역 안이면 남긴다
             for t0, t1 in zip(ts, ts[1:]):
                 if t1 - t0 < 1e-9:
                     continue
@@ -184,13 +168,12 @@ class Area:
                 b = [px + dx * t1, py + dy * t1]
                 last = pieces[-1][-1] if pieces else None
                 if last and abs(last[0] - a[0]) < 1e-12 and abs(last[1] - a[1]) < 1e-12:
-                    pieces[-1].append(b)          # 앞 조각과 이어지면 연결
+                    pieces[-1].append(b)
                 else:
                     pieces.append([a, b])
         return pieces
 
     def label_point(self) -> tuple[float, float]:
-        """구 이름을 표시할 위치 (가장 큰 조각의 무게중심, 밖이면 안쪽 지점으로 보정)."""
         def ring_area_centroid(ring):
             a = cx = cy = 0.0
             for (x1, y1), (x2, y2) in zip(ring, ring[1:]):
@@ -205,7 +188,6 @@ class Area:
         if self.contains(lon, lat):
             return lon, lat
 
-        # 무게중심이 영역 밖이면, 그 위도의 가로선에서 영역 안 가장 긴 구간의 가운데
         xs = []
         for ex1, ey1, ex2, ey2, *_ in self._edges():
             if (ey1 > lat) != (ey2 > lat):
@@ -215,7 +197,6 @@ class Area:
         return (max(spans)[1], lat) if spans else (lon, lat)
 
     def distance_to(self, lon: float, lat: float) -> float:
-        """경계 꼭짓점까지의 최소 거리 (위도 보정한 도 단위, 비교용)."""
         kx = math.cos(math.radians(lat))
         return min(
             math.hypot((p[0] - lon) * kx, p[1] - lat)
